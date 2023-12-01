@@ -9,13 +9,14 @@ interface Props {
     placeHolder?: string | null;
     type?: string | null;
     onChange?: onChangeHandler;
+    disabled?: boolean | null;
 
 }
 
-const SaleInput: React.FC<Props> = ({ id ,label, value, placeHolder, onChange, type }) => {
+const SaleInput: React.FC<Props> = ({ id ,label, value, placeHolder, onChange, type, disabled }) => {
     return (
         <div className='w-full'>
-            <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
+            <label htmlFor={label ?? ""} className="block text-sm font-medium leading-6 text-gray-900">
                 { label }
             </label>
             <div className="mt-2">
@@ -24,6 +25,7 @@ const SaleInput: React.FC<Props> = ({ id ,label, value, placeHolder, onChange, t
                     name={label ?? ""}
                     id={id ?? ""}
                     min={0}
+                    disabled={disabled ?? false}
                     value={value}
                     onChange={onChange}
                     className="block px-2 w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
