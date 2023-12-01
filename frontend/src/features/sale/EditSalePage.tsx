@@ -2,24 +2,25 @@ import React, { useEffect, useState } from 'react'
 import SaleInput from '../../components/SaleInput.tsx'
 import { Item, ItemName, Sale } from '../../interfaces/Sale.ts';
 import Modal from '../../components/Modal.tsx';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hooks.ts';
-import { createSale } from './saleSlice.ts';
+import { createSale, getSaleById, updateSale } from './saleSlice.ts';
 import Spinner from '../../components/Spinner.tsx';
 
 
-const AddSalePage = () => {
+const EditSalePage = () => {
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { loading, isSuccess, errors } = useAppSelector((state) => state.sales)
-  const no_faktur = `${Math.floor(Math.random() * (10000 - 1 + 1)) + 1} - ${new Date().toISOString()}`
+  const { id } = useParams();
+  const { loading, isSuccess, errors, singleSale } = useAppSelector((state) => state.sales)
+ 
 
   const [idItem, setIdItem] = useState<number>(1);
   const [open, setOpen] = useState<boolean>(false);
   const [sale, setSale] = useState<Sale>({
     id: "",
-    no_faktur: no_faktur,
+    no_faktur: "",
     pembayaran: 0,
     tanggal_pembayaran: "",
     items: [],
@@ -27,6 +28,31 @@ const AddSalePage = () => {
     keterangan: "",
     total_kembalian: 0,
   });
+
+
+  useEffect(() => {
+    if (!id) return
+    dispatch(getSaleById(id))
+  }, [])
+
+  useEffect(() => {
+    setInitialState()
+  }, [singleSale])
+
+  const setInitialState = () => {
+    if (!singleSale) return
+    setSale({
+      id: singleSale.id,
+      no_faktur: singleSale.no_faktur,
+      pembayaran: singleSale.pembayaran,
+      tanggal_pembayaran: singleSale.tanggal_pembayaran,
+      items: singleSale.items,
+      total: singleSale.total,
+      keterangan: singleSale.keterangan,
+      total_kembalian: singleSale.total_kembalian,
+    })
+  }
+
   const [itemNames, setItemNames] = useState<ItemName[]>([
     { id: "1", title: "Barang 1" },
     { id: "2", title: "Barang 2" },
@@ -43,14 +69,17 @@ const AddSalePage = () => {
     setSale({
       ...sale,
       items: sale.items.map((item) => {
-        if (item.id === id) {
-          const newPrice = price !== "" ? parseInt(price) : 0;
-          item.harga = newPrice;
-          item.ppn_nominal = (newPrice * item.ppn_percent / 100) * item.qty;
-          item.sub_total = (newPrice * item.qty) + item.ppn_nominal;
+        if (item.id === id && price !== "") {
+          return {
+            ...item,
+            harga: parseInt(price),
+            ppn_nominal: (parseInt(price) * item.ppn_percent / 100) * item.qty,
+            sub_total: (parseInt(price) * item.qty) + (parseInt(price) * item.ppn_percent / 100) * item.qty,
+          };
+        } else {
+          return item;
         }
-        return item;
-      })
+      }),
     });
 
   }
@@ -61,14 +90,17 @@ const AddSalePage = () => {
     setSale({
       ...sale,
       items: sale.items.map((item) => {
-        if (item.id === id) {
-          const newQty = qty !== "" ? parseInt(qty) : 0;
-          item.qty = newQty;
-          item.ppn_nominal = (item.harga * item.ppn_percent / 100) * newQty;
-          item.sub_total = (item.harga * newQty) + item.ppn_nominal;
+        if (item.id === id && qty !== "") {
+          return {
+            ...item,
+            qty: parseInt(qty),
+            ppn_nominal: (item.harga * item.ppn_percent / 100) * parseInt(qty),
+            sub_total: (item.harga * parseInt(qty)) + (item.harga * item.ppn_percent / 100) * parseInt(qty),
+          };
+        } else {
+          return item;
         }
-        return item;
-      })
+      }),
     });
 
   }
@@ -121,10 +153,10 @@ const AddSalePage = () => {
   }, [])
 
 
-  const onSave = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const onEdit = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
-    await dispatch(createSale({
+    await dispatch(updateSale({
       ...sale,
       total: calculateTotal(),
       total_kembalian: calculateKembalian()
@@ -133,7 +165,7 @@ const AddSalePage = () => {
     if (errors === null) {
       navigate(-1)
       setSale({
-        no_faktur: no_faktur,
+        no_faktur: "",
         tanggal_pembayaran: "",
         pembayaran: 0,
         total: 0,
@@ -247,11 +279,11 @@ const AddSalePage = () => {
 
             <div className='flex mt-8 space-x-4'>
               <button
-                onClick={onSave}
+                onClick={onEdit}
                 type="button"
                 className="rounded-md bg-indigo-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
               >
-                SIMPAN
+                EDIT
               </button>
               <button
                 onClick={() => navigate(-1)}
@@ -274,4 +306,4 @@ const AddSalePage = () => {
   )
 }
 
-export default AddSalePage
+export default EditSalePage

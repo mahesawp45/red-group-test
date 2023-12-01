@@ -1,17 +1,18 @@
 export interface Sale {
-  total: number;
+  id?: string | null;
   no_faktur: string;
   tanggal_pembayaran: string;
-  items: Item[];
+  keterangan?: string | null;
   pembayaran: number;
-  keterangan: string;
+  total: number;
   total_kembalian: number;
+  items: Item[];
 }
 
 export interface Item {
   id: string;
-  title: string;
-  price: number;
+  nama: string;
+  harga: number;
   qty: number;
   ppn_nominal: number;
   ppn_percent: number;

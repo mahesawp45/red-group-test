@@ -1,6 +1,6 @@
 import React, { Fragment, useRef } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
-import { ItemName } from '../features/interfaces/Sale.ts';
+import { ItemName } from '../interfaces/Sale.ts';
 
 interface Props {
     isOpen: boolean;
